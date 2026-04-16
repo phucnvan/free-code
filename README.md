@@ -12,9 +12,9 @@
 
 <p align="center">
   <a href="#quick-install"><img src="https://img.shields.io/badge/install-one--liner-blue?style=flat-square" alt="Install" /></a>
-  <a href="https://github.com/paoloanzn/free-code/stargazers"><img src="https://img.shields.io/github/stars/paoloanzn/free-code?style=flat-square" alt="Stars" /></a>
-  <a href="https://github.com/paoloanzn/free-code/issues"><img src="https://img.shields.io/github/issues/paoloanzn/free-code?style=flat-square" alt="Issues" /></a>
-  <a href="https://github.com/paoloanzn/free-code/blob/main/FEATURES.md"><img src="https://img.shields.io/badge/features-88%20flags-orange?style=flat-square" alt="Feature Flags" /></a>
+  <a href="https://github.com/phucnvan/free-code/stargazers"><img src="https://img.shields.io/github/stars/phucnvan/free-code?style=flat-square" alt="Stars" /></a>
+  <a href="https://github.com/phucnvan/free-code/issues"><img src="https://img.shields.io/github/issues/phucnvan/free-code?style=flat-square" alt="Issues" /></a>
+  <a href="https://github.com/phucnvan/free-code/blob/main/FEATURES.md"><img src="https://img.shields.io/badge/features-88%20flags-orange?style=flat-square" alt="Feature Flags" /></a>
   <a href="#ipfs-mirror"><img src="https://img.shields.io/badge/IPFS-mirrored-teal?style=flat-square" alt="IPFS" /></a>
 </p>
 
@@ -22,13 +22,46 @@
 
 ## Quick Install
 
+### macOS / Linux
+
 ```bash
-curl -fsSL https://raw.githubusercontent.com/paoloanzn/free-code/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/phucnvan/free-code/main/install.sh | bash
 ```
 
-Checks your system, installs Bun if needed, clones the repo, builds with all experimental features enabled, and symlinks `free-code` on your PATH.
+### Windows PowerShell
+
+```powershell
+irm https://raw.githubusercontent.com/phucnvan/free-code/main/install.ps1 | iex
+```
+
+The installers:
+
+- check for `git`
+- install Bun if needed
+- clone `https://github.com/phucnvan/free-code.git`
+- run `bun install`
+- build the full dev binary with `bun run build:dev:full`
+- create a `free-code` launcher on your PATH
+
+On macOS/Linux, the launcher is symlinked into `~/.local/bin/free-code`.
+On Windows, the installer creates `free-code.cmd` and `free-code.ps1` in `%USERPROFILE%\.local\bin`.
 
 Then run `free-code` and use the `/login` command to authenticate with your preferred model provider.
+
+### Side-by-side install with Claude Code
+
+`free-code` uses the same default config directory as Claude Code upstream: `~/.claude`.
+If you want both installed side by side without sharing auth, sessions, plugins, and settings, run `free-code` with a separate config dir:
+
+```bash
+export CLAUDE_CONFIG_DIR="$HOME/.free-code"
+free-code
+```
+
+```powershell
+$env:CLAUDE_CONFIG_DIR="$HOME\\.free-code"
+free-code
+```
 
 ---
 
@@ -162,7 +195,7 @@ Supports custom deployment IDs as model names.
 ## Requirements
 
 - **Runtime**: [Bun](https://bun.sh) >= 1.3.11
-- **OS**: macOS or Linux (Windows via WSL)
+- **OS**: macOS, Linux, or Windows PowerShell
 - **Auth**: An API key or OAuth login for your chosen provider
 
 ```bash
@@ -175,10 +208,21 @@ curl -fsSL https://bun.sh/install | bash
 ## Build
 
 ```bash
-git clone https://github.com/paoloanzn/free-code.git
+git clone https://github.com/phucnvan/free-code.git
 cd free-code
-bun build
+bun install
+bun run build
 ./cli
+```
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/phucnvan/free-code.git
+cd free-code
+bun install
+bun run build:dev:full
+.\cli-dev
 ```
 
 ### Build Variants
@@ -221,6 +265,19 @@ bun run dev
 
 # OAuth login
 ./cli /login
+```
+
+Windows PowerShell:
+
+```powershell
+# Interactive REPL
+.\cli-dev
+
+# One-shot mode
+.\cli-dev -p "what files are in this directory?"
+
+# OAuth login
+.\cli-dev /login
 ```
 
 ### Environment Variables Reference
