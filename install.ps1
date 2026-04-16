@@ -52,7 +52,14 @@ function Test-VersionGte([string] $Current, [string] $Minimum) {
 }
 
 function Check-OS() {
-  if (-not $IsWindows) {
+  $isWindowsHost = $false
+  if (Test-Path variable:IsWindows) {
+    $isWindowsHost = [bool]$IsWindows
+  } else {
+    $isWindowsHost = $env:OS -eq "Windows_NT"
+  }
+
+  if (-not $isWindowsHost) {
     Fail "This installer is for Windows PowerShell only."
   }
   Write-Ok "OS: Windows"
