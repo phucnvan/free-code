@@ -231,7 +231,7 @@ bun run build:dev:full
 |---|---|---|---|
 | `bun run build` | `./cli` | `VOICE_MODE` only | Production-like binary |
 | `bun run build:dev` | `./cli-dev` | `VOICE_MODE` only | Dev version stamp |
-| `bun run build:dev:full` | `./cli-dev` | All 54 experimental flags | Full unlock build |
+| `bun run build:dev:full` | `./cli-dev` | Curated `dev-full` experimental bundle | Full unlock build |
 | `bun run compile` | `./dist/cli` | `VOICE_MODE` only | Alternative output path |
 
 ### Custom Feature Flags
@@ -298,7 +298,12 @@ Windows PowerShell:
 
 ## Experimental Features
 
-The `bun run build:dev:full` build enables all 54 working feature flags. Highlights:
+There are two different numbers to keep straight:
+
+- `FEATURES.md` audits **54 flags that currently bundle cleanly** in this snapshot.
+- `bun run build:dev:full` currently enables the curated **`dev-full` bundle** from [scripts/build.ts](scripts/build.ts), which is the set the installers build by default.
+
+That means a normal install of `free-code` already includes the current `dev-full` experimental bundle. Some features are fully local and work immediately; others still require `claude.ai` login, remote/web flows, audio tooling, or supporting config.
 
 ### Interaction & UI
 
@@ -334,7 +339,85 @@ The `bun run build:dev:full` build enables all 54 working feature flags. Highlig
 | `BASH_CLASSIFIER` | Classifier-assisted bash permission decisions |
 | `PROMPT_CACHE_BREAK_DETECTION` | Cache-break detection in compaction/query flow |
 
-See [FEATURES.md](FEATURES.md) for the complete audit of all 88 flags, including 34 broken flags with reconstruction notes.
+### Which features can you actually use?
+
+The most useful way to think about experimental features is by runtime dependency:
+
+- **Works locally right away**: terminal-only UI, planning UX, search, history, budget tracking, and most agent orchestration improvements
+- **Needs `claude.ai` auth**: remote/web features like `ULTRAPLAN`, `BRIDGE_MODE`, `CCR_*`, and parts of channels/voice
+- **Needs extra environment setup**: audio recording for `VOICE_MODE`, team-memory files for `TEAMMEM`, remote bridge setup for `BRIDGE_MODE`
+
+### Recommended first tests
+
+These are the easiest features to verify in a fresh install:
+
+| Feature | What it does | How to test | Extra requirements | Works with Codex? |
+|---|---|---|---|---|
+| `ULTRATHINK` | Boosts reasoning effort when the prompt contains the `ultrathink` keyword | In the REPL, type `ultrathink analyze this repo structure` | None | Yes |
+| `HISTORY_PICKER` | Improves interactive prompt history search | Send a few prompts, then press `Ctrl+R` | None | Yes |
+| `QUICK_SEARCH` | Adds quick-open and global search bindings | Press `Ctrl+Shift+F` or `Ctrl+Shift+P` in the REPL | None | Yes |
+| `MESSAGE_ACTIONS` | Adds transcript navigation/actions on prior messages | After you have a few messages, press `Shift+Up` | Fullscreen REPL context | Yes |
+| `TOKEN_BUDGET` | Tracks token budget and warning state during longer sessions | Start a normal coding session and watch the status UI as context grows | None | Yes |
+| `NEW_INIT` | Enables the newer `/init` onboarding flow | Run `/init` in a project directory | None | Yes |
+| `BUILTIN_EXPLORE_PLAN_AGENTS` | Adds built-in explore/plan agent presets | Open `/agents` and inspect built-in presets | None | Yes |
+| `VERIFICATION_AGENT` | Adds verification-oriented agent guidance | Ask the tool to validate or review a change after an edit | None | Yes |
+
+### Features that require Claude web/remote login
+
+These are included in `dev-full`, but they are not purely local features:
+
+| Feature | What it does | How to test | Extra requirements | Works with Codex? |
+|---|---|---|---|---|
+| `ULTRAPLAN` | Launches a stronger remote planning session on Claude Code web | Run `/ultraplan <task>` | `claude.ai` login | No |
+| `BRIDGE_MODE` | Remote-control bridge / web-connected workflows | Run the bridge-related commands after login | `claude.ai` login and remote bridge eligibility | No |
+| `CCR_AUTO_CONNECT` | Auto-connect behavior for remote sessions | Verify after remote/web setup | `claude.ai` login | No |
+| `CCR_MIRROR` | Outbound-only mirrored remote sessions | Test only after remote session setup | `claude.ai` login | No |
+| `CCR_REMOTE_SETUP` | Remote setup command path | Use the remote setup command after login | `claude.ai` login | No |
+| `KAIROS_CHANNELS` | Channel-related UI and callback plumbing | Requires matching remote/channel environment | `claude.ai` login and supporting setup | Usually no |
+
+### Features with extra caveats
+
+| Feature | Caveat |
+|---|---|
+| `VOICE_MODE` | Built into this binary, but still depends on `claude.ai` auth and a working local audio backend. |
+| `TEAMMEM` | Only useful if you actually configure team-memory files and related environment. |
+| `NATIVE_CLIPBOARD_IMAGE` | Mostly a platform optimization path, not a dramatic visible UX feature on every system. |
+| `BASH_CLASSIFIER` | Affects permission behavior rather than adding an obvious command, so it is harder to "see" directly. |
+| `PROMPT_CACHE_BREAK_DETECTION` | Internal quality/perf behavior; you notice it through better compaction/cache handling rather than a dedicated UI command. |
+
+### Codex compatibility
+
+If you run with:
+
+```powershell
+$env:CLAUDE_CODE_USE_OPENAI=1
+free-code /login
+```
+
+and log into **OpenAI Codex**, the **local terminal features** above still work well. What usually does **not** carry over are the features tied to `claude.ai` web/remote infrastructure, such as `ULTRAPLAN`, `BRIDGE_MODE`, and the `CCR_*` family.
+
+In short:
+
+- **Codex is fine for local UI/agent/search/history features**
+- **Claude login is better if you want the full remote/web experimental stack**
+
+### Quick test checklist
+
+On a normal install, you can verify the experimental bundle in 2 minutes:
+
+1. Run `free-code`
+2. Type a prompt containing `ultrathink`
+3. Press `Ctrl+R` after a few prompts
+4. Press `Ctrl+Shift+F`
+5. Run `/init`
+6. Run `/ultraplan`
+
+Expected result:
+
+- Steps 2-5 should behave as available local features in a standard REPL
+- `/ultraplan` should at least resolve as a real command; running it fully requires `claude.ai` login
+
+See [FEATURES.md](FEATURES.md) for the complete audit of all 88 flags, including the larger list of bundle-clean flags and the broken flags with reconstruction notes.
 
 ---
 
