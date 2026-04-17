@@ -229,6 +229,12 @@ export type GlobalConfig = {
   oauthAccount?: AccountInfo
 
   /**
+   * Saved first-party provider preference for launches where no explicit
+   * provider env var is set. Third-party providers remain env-driven.
+   */
+  preferredProvider?: 'firstParty' | 'openai'
+
+  /**
    * OpenAI Codex OAuth tokens, stored separately from Anthropic credentials.
    * These are acquired via the Codex OAuth flow (auth.openai.com) and are used
    * as Bearer tokens against OpenAI's API — they are never sent to Anthropic servers.
@@ -608,6 +614,7 @@ function createDefaultGlobalConfig(): GlobalConfig {
     installMethod: undefined,
     autoUpdates: undefined,
     theme: 'dark',
+    preferredProvider: 'firstParty',
     preferredNotifChannel: 'auto',
     verbose: false,
     editorMode: 'normal',
@@ -1350,6 +1357,10 @@ function saveConfigWithLock<A extends object>(
 
 // Flag to track if config reading is allowed
 let configReadingAllowed = false
+
+export function areConfigsEnabled(): boolean {
+  return configReadingAllowed
+}
 
 export function enableConfigs(): void {
   if (configReadingAllowed) {
